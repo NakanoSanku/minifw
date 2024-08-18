@@ -3,7 +3,7 @@ import json
 import requests
 from loguru import logger
 
-from .pusher import PusherOptions, Pusher
+from minifw.pusher.pusher import PusherOptions, Pusher
 
 
 class PushPlusOptions(PusherOptions):

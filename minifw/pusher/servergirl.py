@@ -3,7 +3,7 @@ import json
 import requests
 from loguru import logger
 
-from .pusher import Pusher, PusherOptions
+from minifw.pusher.pusher import Pusher, PusherOptions
 
 
 class ServerGirlOptions(PusherOptions):
