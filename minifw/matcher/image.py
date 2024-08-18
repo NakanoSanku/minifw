@@ -19,9 +19,10 @@ class ImageMatchResult(MatchResult):
         return self.x, self.y, self.w, self.h
 
     def click(self, controller: Touch, duration: int = 100,
-              algorithm: RegionPointGenerator = NormalDistributionPointGenerator):
+              algorithm: RegionPointGenerator = NormalDistributionPointGenerator) -> bool:
         point = algorithm.generate(self.x, self.y, self.w, self.h)
         controller.click(point.x, point.y, duration)
+        return True
 
 
 class ImageTemplate(Template):

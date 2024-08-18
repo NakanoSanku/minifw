@@ -16,9 +16,10 @@ class MultiColorMatchResult(MatchResult):
     def get(self):
         return self.x, self.y
 
-    def click(self, touch: Touch, duration: int, algorithm:OffsetPointGenerator = NoneOffsetPointGenerator):
-        x,y = algorithm.generate(self.x,self.y)
-        touch.click(x,y, duration)
+    def click(self, touch: Touch, duration: int, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
+        x, y = algorithm.generate(self.x, self.y)
+        touch.click(x, y, duration)
+        return True
 
 
 class MultiColorTemplate(Template):
@@ -29,11 +30,10 @@ class MultiColorTemplate(Template):
         self.region = region
         self.threshold = threshold
 
-    def match(self, image:cv2.Mat) -> MultiColorMatchResult | NoneMatchResult:
+    def match(self, image: cv2.Mat) -> MultiColorMatchResult | NoneMatchResult:
         result = minicv.findMultiColors(
             image, self.first_color, self.colors, self.region, self.threshold)
         if result is None:
             return NoneMatchResult()
         x, y = result
         return MultiColorMatchResult(x, y)
-

@@ -7,7 +7,7 @@ class MatchResult(ABC):
         pass
 
     @abstractmethod
-    def click(self, touch, duration, algorithm):
+    def click(self, touch, duration, algorithm) -> bool:
         pass
 
 
@@ -18,5 +18,5 @@ class NoneMatchResult(MatchResult):
     def get(self):
         return None
 
-    def click(self, *args, **kwargs):
-        pass
+    def click(self, *args, **kwargs) -> bool:
+        return False
