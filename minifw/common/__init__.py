@@ -1,4 +1,5 @@
 from .mumuapi import MuMuApi
+from .dataclass import Point
 import os
 
 WORK_DIR = os.path.dirname(__file__)
