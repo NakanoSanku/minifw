@@ -250,8 +250,59 @@ def find_multi_colors(img: cv2.Mat, firstColor: int | str | RGB, colors: list[tu
             return result
     return None
 
+
 def bytes2mat(image_data: bytes) -> cv2.Mat:
     return cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_UNCHANGED)
+
+
+def get_similarity(img1, img2, algorithm_type="SSIM"):
+    # 检查图片是否是相同大小和形状
+    if img1.shape != img2.shape:
+        raise ValueError("Images must be of the same size and shape")
+
+    if algorithm_type == 'SSIM':
+        # 计算 SSIM (平均结构相似性)
+        def compute_ssim(img1, img2):
+            C1 = 6.5025
+            C2 = 58.5225
+
+            img1 = img1.astype(np.float64)
+            img2 = img2.astype(np.float64)
+
+            mu1 = cv2.GaussianBlur(img1, (11, 11), 1.5)
+            mu2 = cv2.GaussianBlur(img2, (11, 11), 1.5)
+
+            mu1_sq = mu1 * mu1
+            mu2_sq = mu2 * mu2
+            mu1_mu2 = mu1 * mu2
+
+            sigma1_sq = cv2.GaussianBlur(img1 * img1, (11, 11), 1.5) - mu1_sq
+            sigma2_sq = cv2.GaussianBlur(img2 * img2, (11, 11), 1.5) - mu2_sq
+            sigma12 = cv2.GaussianBlur(img1 * img2, (11, 11), 1.5) - mu1_mu2
+
+            ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / (
+                        (mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+            return ssim_map.mean()
+
+        if len(img1.shape) == 3:  # 如果图像是彩色的，则分别计算每个通道的SSIM
+            channels = cv2.split(img1)
+            ssim_vals = [compute_ssim(c1, c2) for c1, c2 in zip(cv2.split(img1), cv2.split(img2))]
+            similarity = np.mean(ssim_vals)
+        else:  # 如果图像是灰度的，直接计算
+            similarity = compute_ssim(img1, img2)
+        return similarity
+
+    elif algorithm_type == 'PSNR':
+        # 计算 PSNR (峰值信噪比)
+        mse = np.mean((img1 - img2) ** 2)
+        if mse == 0:  # 如果MSE为0，说明两张图完全一样
+            return float('inf')  # 无穷大，表示完全相同
+        max_pixel = 255.0
+        psnr = 20 * np.log10(max_pixel / np.sqrt(mse))
+        return psnr
+
+    else:
+        raise ValueError(f"Unsupported comparison type: {algorithm_type}")
 
 
 # TODO: 添加特征点匹配
@@ -259,5 +310,5 @@ def bytes2mat(image_data: bytes) -> cv2.Mat:
 
 if __name__ == "__main__":
     image = imread(r"C:\Users\KateT\Desktop\QQ截图20240817084747.png")
-    text_image = put_text(image, "HELLO WORLD! 四十i是的是isi皇帝", Point(100, 100), font_size=50)
-    imshow(text_image)
+    image2 = imread(r"C:\Users\KateT\Desktop\QQ截图20240817084747.png")
+    print(get_similarity(image, image2))
