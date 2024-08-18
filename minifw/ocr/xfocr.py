@@ -11,7 +11,8 @@ import cv2
 import requests
 from loguru import logger
 
-from .ocr import OcrResult, OcrProvider
+from minifw.ocr.ocr import OcrResult, OcrProvider
+from minifw.common import Rect
 
 
 class XfOcrOptions:
@@ -131,10 +132,10 @@ class XfOcrProvider(OcrProvider):
                 OcrResult(
                     text=r["words"][0]["content"],
                     confidence=r["conf"],
-                    region=r[
-                        int(r["coord"][0]["x"]),
-                        int(r["coord"][0]["y"]),
-                        int(r["coord"][2]["x"]) - int(r["coord"][0]["x"]),
-                        int(r["coord"][2]["y"]) - int(r["coord"][0]["y"])]
-                ) for r in result["pages"][0]["lines"]]
+                    region=Rect(
+                        x=int(r["coord"][0]["x"]),
+                        y=int(r["coord"][0]["y"]),
+                        w=int(r["coord"][2]["x"]) - int(r["coord"][0]["x"]),
+                        h=int(r["coord"][2]["y"]) - int(r["coord"][0]["y"])
+                    )) for r in result["pages"][0]["lines"]]
         return None

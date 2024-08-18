@@ -1,11 +1,14 @@
 from abc import ABC
 from dataclasses import dataclass
 
+from minifw.common import Rect
+
+
 @dataclass
 class OcrResult:
     text: str
     confidence: float
-    region: list[int]
+    region: Rect
 
 
 class OcrProvider(ABC):
@@ -39,6 +42,7 @@ class OcrService:
         if name is None:
             return OcrService.provider_pool[0]
         for provider in OcrService.provider_pool:
+            #TODO: 同个服务商的多个实例实现负载均很
             if provider.NAME == name:
                 return provider
         raise Exception("没有找到对应的OCR服务提供者")
