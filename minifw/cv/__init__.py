@@ -9,6 +9,7 @@ from .image import (
     resize,
     scale,
     threshold,
+    bytes2mat,
     # 绘制相关
     line,
     rectangle,
@@ -23,4 +24,5 @@ from .image import (
     find_multi_colors,
     match_template,
     match_template_best,
+
 )

@@ -250,6 +250,9 @@ def find_multi_colors(img: cv2.Mat, firstColor: int | str | RGB, colors: list[tu
             return result
     return None
 
+def bytes2mat(image_data: bytes) -> cv2.Mat:
+    return cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_UNCHANGED)
+
 
 # TODO: 添加特征点匹配
 
