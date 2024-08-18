@@ -1,10 +1,11 @@
 import cv2
-import minicv
-from minidevice import Touch
 
 from .result import MatchResult, NoneMatchResult
 from .template import Template
 from ..algo.generate import RegionPointGenerator, NormalDistributionPointGenerator
+from ..common import Rect
+from ..cv import match_template_best, imread, get_height, get_width
+from ..touch import Touch
 
 
 class ImageMatchResult(MatchResult):
@@ -29,7 +30,7 @@ class ImageTemplate(Template):
     # 图像缓存池
     cache_pool = {}
 
-    def __init__(self, template_path: str, region: list = None, threshold=0.95, level=None) -> None:
+    def __init__(self, template_path: str, region: Rect = None, threshold=0.95, level=None) -> None:
         super().__init__()
         self.template_path = template_path
         self.region = region
@@ -42,14 +43,13 @@ class ImageTemplate(Template):
             if ImageTemplate.cache_pool.get(self.template_path):
                 self.template = ImageTemplate.cache_pool[self.template_path]
             else:
-                self.template = minicv.imread(self.template_path, cv2.IMREAD_UNCHANGED)
+                self.template = imread(self.template_path, cv2.IMREAD_UNCHANGED)
                 ImageTemplate.cache_pool[self.template_path] = self.template
 
-        result = minicv.matchTemplateBest(image, self.template,
-                                          self.region, self.threshold, self.level)
+        result = match_template_best(image, self.template,self.region, self.threshold, self.level)
 
         if result is None:
             return NoneMatchResult()
-        x, y = result
-        h, w = minicv.getHeight(self.template), minicv.getWidth(self.template)
-        return ImageMatchResult(x, y, w, h)
+
+        h, w = get_height(self.template), get_width(self.template)
+        return ImageMatchResult(result.x,result.y, w, h)

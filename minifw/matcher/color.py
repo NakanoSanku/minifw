@@ -1,10 +1,11 @@
 import cv2
-import minicv
-from minidevice import Touch
 
 from .result import MatchResult, NoneMatchResult
 from .template import Template
 from ..algo.generate import OffsetPointGenerator, NoneOffsetPointGenerator
+from ..common import Rect, RGB
+from ..cv import find_multi_colors
+from ..touch import Touch
 
 
 class MultiColorMatchResult(MatchResult):
@@ -23,7 +24,11 @@ class MultiColorMatchResult(MatchResult):
 
 
 class MultiColorTemplate(Template):
-    def __init__(self, first_color: str | int, colors: list, region: list = None, threshold: int = 4) -> None:
+    def __init__(self,
+                 first_color: str | int | RGB,
+                 colors: list[tuple[int, int, int | str | RGB]],
+                 region: Rect = None,
+                 threshold: int = 4) -> None:
         super().__init__()
         self.first_color = first_color
         self.colors = colors
@@ -31,9 +36,7 @@ class MultiColorTemplate(Template):
         self.threshold = threshold
 
     def match(self, image: cv2.Mat) -> MultiColorMatchResult | NoneMatchResult:
-        result = minicv.findMultiColors(
-            image, self.first_color, self.colors, self.region, self.threshold)
+        result = find_multi_colors(image, self.first_color, self.colors, self.region, self.threshold)
         if result is None:
             return NoneMatchResult()
-        x, y = result
-        return MultiColorMatchResult(x, y)
+        return MultiColorMatchResult(result.x, result.y)
