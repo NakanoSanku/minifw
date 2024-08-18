@@ -1,5 +1,4 @@
-from minifw.common import Point
-from minifw.common.dataclass import Rect
+from minifw.common.dataclass import Rect,Point
 
 
 def is_point_in_rect(pt: Point, rect: Rect) -> bool:
