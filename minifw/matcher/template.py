@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import cv2
 
-from .result import MatchResult
+from minifw.matcher.result import MatchResult
 
 
 class Template(ABC):

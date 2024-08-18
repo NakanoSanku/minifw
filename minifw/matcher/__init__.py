@@ -1,4 +1,4 @@
-from .template import Template
-from .result import MatchResult, NoneMatchResult
-from .color import MultiColorTemplate
-from .image import ImageTemplate
+from minifw.matcher.color import MultiColorTemplate
+from minifw.matcher.image import ImageTemplate
+from minifw.matcher.result import MatchResult, NoneMatchResult
+from minifw.matcher.template import Template
