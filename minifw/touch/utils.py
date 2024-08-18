@@ -1,6 +1,6 @@
 import time
 
-from . import config
+from minifw.touch import config
 
 
 class CommandBuilder(object):

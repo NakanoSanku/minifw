@@ -3,10 +3,9 @@ import socket
 from adbutils import adb
 from loguru import logger
 
-from . import config
-from .touch import Touch
-from .utils import CommandBuilder
-from .utils import str2byte
+from minifw.touch import config
+from minifw.touch.touch import Touch
+from minifw.touch.utils import CommandBuilder, str2byte
 
 
 class MaaTouch(Touch):
