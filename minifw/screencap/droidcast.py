@@ -4,9 +4,10 @@ import requests
 from adbutils import adb
 from loguru import logger
 
-from .config import DROIDCAST_APK_ANDROID_PATH, DROIDCAST_APK_PATH, DROIDCAST_APK_VERSION, ADB_EXECUTOR, DROIDCAST_PORT, \
+from minifw.screencap.config import DROIDCAST_APK_ANDROID_PATH, DROIDCAST_APK_PATH, DROIDCAST_APK_VERSION, ADB_EXECUTOR, \
+    DROIDCAST_PORT, \
     DROIDCAST_APK_PACKAGE_NAME, DROIDCAST_PM_PATH_SHELL, DROIDCAST_START_CMD
-from .screencap import ScreenCap
+from minifw.screencap.screencap import ScreenCap
 
 
 class DroidCast(ScreenCap):

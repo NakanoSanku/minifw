@@ -2,8 +2,8 @@ import subprocess
 
 from adbutils import adb
 
-from .config import ADB_EXECUTOR
-from .screencap import ScreenCap
+from minifw.screencap.config import ADB_EXECUTOR
+from minifw.screencap.screencap import ScreenCap
 
 
 class ADBCap(ScreenCap):
