@@ -1,1 +1,1 @@
-from .task import Task,TaskScheduler
+from minifw.scheduler.task import Task,TaskScheduler
