@@ -28,7 +28,8 @@ setup(
     install_requires=["adbutils",
                       "loguru",
                       "requests",
-                      'opencv-python'
+                      'opencv-python',
+                      'PyTurboJPEG'
                       ],
     python_requires=">=3",
 )
