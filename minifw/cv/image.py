@@ -146,7 +146,7 @@ def match_template(img: cv2.Mat, template: cv2.Mat, region: Rect = None, match_t
     x, y, w, h = (region.x, region.y, region.w, region.h) if region else (0, 0, img.shape[1], img.shape[0])
     img = clip(img, x, y, w, h)
     # 为带A通道的template创建掩膜
-    mask = transparent_to_mask(template) if img.shape[2] != 4 else None
+    mask = transparent_to_mask(template) if template.shape[2] == 4 else None
     # # 对图像和模板进行灰度化
     # img = grayscale(img)
     # template = grayscale(template)
@@ -180,7 +180,7 @@ def match_template_best(img: cv2.Mat, template: cv2.Mat, region: Rect = None, ma
     img_array = generate_pyramid(img, level)
     template_array = generate_pyramid(template, level)
     mask_array = []
-    if img.shape[2] == 4:
+    if template.shape[2] == 4:
         # 为带A通道的template创建掩膜
         mask_array = [transparent_to_mask(t) for t in template_array]
     # 灰度化
@@ -189,8 +189,8 @@ def match_template_best(img: cv2.Mat, template: cv2.Mat, region: Rect = None, ma
     for i in reversed(range(level + 1)):
         img_level = img_array[i]
         template_level = template_array[i]
-        mask_level = mask_array[i] if img.shape[2] == 4 else None
-        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if img.shape[2] == 4 else cv2.matchTemplate(img_level, template_level, method)
+        mask_level = mask_array[i] if template.shape[2] == 4 else None
+        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if template.shape[2] == 4 else cv2.matchTemplate(img_level, template_level, method)
 
         _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
