@@ -1,10 +1,10 @@
 import ctypes
 
 import numpy as np
-from minidevice import ScreenCap
 from turbojpeg import TurboJPEG, TJSAMP_422
 
 from minifw.common import MuMuApi, MUMU_API_DLL_PATH, TURBO_JPEG_DLL_PATH
+from minifw.screencap.screencap import ScreenCap
 
 
 class MuMuScreenCap(ScreenCap):

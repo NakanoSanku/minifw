@@ -3,6 +3,7 @@ import platform
 
 from adbutils import adb_path
 
+DEFAULT_HOST = "127.0.0.1"
 WORK_DIR = os.path.dirname(__file__)
 
 # system

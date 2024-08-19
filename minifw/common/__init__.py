@@ -1,6 +1,6 @@
 import os
 
-from .common import is_point_in_rect,is_rect_in_rect
+from .common import is_point_in_rect, is_rect_in_rect
 from .dataclass import Point, RGB, Rect, LAB, HSV, ImageSize
 from .mumuapi import MuMuApi
 

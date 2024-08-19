@@ -5,11 +5,11 @@ import time
 from adbutils import adb
 from loguru import logger
 
-from .config import ADB_EXECUTOR, MINITOUCH_SERVER_START_DELAY, MINITOUCH_REMOTE_ADDR, DEFAULT_HOST, \
+from minifw.touch.config import ADB_EXECUTOR, MINITOUCH_SERVER_START_DELAY, MINITOUCH_REMOTE_ADDR, DEFAULT_HOST, \
     DEFAULT_BUFFER_SIZE, MINITOUCH_PATH, MINITOUCH_REMOTE_PATH
-from .touch import Touch
-from .utils import CommandBuilder
-from .utils import str2byte
+from minifw.touch.touch import Touch
+from minifw.touch.utils import CommandBuilder
+from minifw.touch.utils import str2byte
 
 
 class MiniTouchUnSupportError(Exception):

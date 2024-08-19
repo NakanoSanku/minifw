@@ -1,9 +1,8 @@
 import ctypes
 import time
 
-from minidevice import Touch
-
 from minifw.common import MuMuApi, MUMU_API_DLL_PATH
+from minifw.touch.touch import Touch
 
 
 class MuMuTouch(Touch):

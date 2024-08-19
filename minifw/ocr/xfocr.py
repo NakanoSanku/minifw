@@ -11,8 +11,8 @@ import cv2
 import requests
 from loguru import logger
 
-from minifw.ocr.ocr import OcrResult, OcrProvider
 from minifw.common import Rect
+from minifw.ocr.ocr import OcrResult, OcrProvider
 
 
 class XfOcrOptions:

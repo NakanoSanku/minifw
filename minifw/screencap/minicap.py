@@ -5,10 +5,11 @@ import threading
 import time
 
 from adbutils import adb
-from minidevice.config import MINICAP_PATH, MINICAPSO_PATH, ADB_EXECUTOR, MNC_HOME, MNC_SO_HOME, MINICAP_COMMAND, \
+from loguru import logger
+
+from minifw.screencap.config import MINICAP_PATH, MINICAPSO_PATH, ADB_EXECUTOR, MNC_HOME, MNC_SO_HOME, MINICAP_COMMAND, \
     MINICAP_START_TIMEOUT, DEFAULT_HOST
-from minidevice.screencap.screencap import ScreenCap
-from minidevice.utils.logger import logger
+from minifw.screencap.screencap import ScreenCap
 
 
 class MiniCapStream:

@@ -1,5 +1,6 @@
 from adbutils import adb
-from minidevice.touch.touch import Touch
+
+from minifw.touch.touch import Touch
 
 
 class ADBTouch(Touch):
