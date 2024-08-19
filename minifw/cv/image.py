@@ -183,19 +183,20 @@ def match_template_best(img: cv2.Mat, template: cv2.Mat, region: Rect = None, ma
     if img.shape[2] == 4:
         # 为带A通道的template创建掩膜
         mask_array = [transparent_to_mask(t) for t in template_array]
+    # 灰度化
+    img_array = [grayscale(i) for i in img_array]
+    template_array = [grayscale(t) for t in template_array]
     for i in reversed(range(level + 1)):
         img_level = img_array[i]
         template_level = template_array[i]
         mask_level = mask_array[i] if img.shape[2] == 4 else None
-        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if img.shape[
-                                                                                           2] == 4 else cv2.matchTemplate(
-            img_level, template_level, method)
+        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if img.shape[2] == 4 else cv2.matchTemplate(img_level, template_level, method)
 
         _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
         if max_val > match_threshold:
             return Point(max_loc[0] * (2 ** i) + x, max_loc[1] * (2 ** i) + y)
-    return None
+
 
 
 def find_color_inner(img: cv2.Mat, color: int | str | RGB, region: Rect = None, color_threshold: int = 4):
@@ -304,7 +305,13 @@ def get_similarity(img1, img2, algorithm_type="SSIM"):
     else:
         raise ValueError(f"Unsupported comparison type: {algorithm_type}")
 
-
+def grayscale(img: cv2.Mat) -> cv2.Mat:
+    if img.shape[2] == 4:
+        return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+    elif img.shape[2] == 3:
+        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        raise ValueError("Invalid image format. Image must be in BGR or BGRA format.")
 # TODO: 添加特征点匹配
 
 
