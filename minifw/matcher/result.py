@@ -12,7 +12,7 @@ class MatchResult(ABC):
         pass
 
     @abstractmethod
-    def click(self, touch, duration, algorithm) -> bool:
+    def click(self, touch, duration=100, algorithm=None) -> bool:
         pass
 
 
@@ -52,7 +52,7 @@ class PointMatchResult(MatchResult):
     def get(self):
         return self.x, self.y
 
-    def click(self, touch: Touch, duration: int, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
+    def click(self, touch: Touch, duration: int = 100, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
         x, y = algorithm.generate(self.x, self.y)
         touch.click(x, y, duration)
         return True
