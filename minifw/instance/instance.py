@@ -13,9 +13,9 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         self.screencap_method = screencap_method
         self.touch_method = touch_method
         self.keyboard_method = keyboard_method
-        self.debug = debug  #TODO: 添加调试模式
-        self.cache_screen: cv2.Mat | None = None  #TODO: 添加画面检测
-        self.timeout = 0  #TODO: 添加超时检测
+        self.debug = debug  # TODO: 添加调试模式
+        self.cache_screen: cv2.Mat | None = None  # TODO: 添加画面检测
+        self.timeout = 0  # TODO: 添加超时检测
 
     def screencap_raw(self) -> bytes:
         if self.screencap_method is None:
@@ -36,7 +36,9 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         return self.touch_method.swipe(points, duration)
 
     def find(self, template: Template) -> MatchResult:
-        return template.match(self.screencap())
+        result = template.match(self.screencap())
+        result.set_controller(self)
+        return result
 
     def key_down(self, key: str) -> None:
         if self.keyboard_method is None:
@@ -47,6 +49,10 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         if self.keyboard_method is None:
             raise Exception("未指定键盘输入方式")
         self.keyboard_method.key_up(key)
+
+    def find_and_click(self, template: Template, duration: int = 100, algorithm=None) -> bool:
+        return template.match(self.screencap()).click(self, duration, algorithm) if algorithm else template.match(
+            self.screencap()).click(self, duration)
 
 
 if __name__ == '__main__':
