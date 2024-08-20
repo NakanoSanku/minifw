@@ -7,13 +7,20 @@ from minifw.touch import Touch
 
 
 class MatchResult(ABC):
+    def __init__(self) -> None:
+        self.controller = None
+
     @abstractmethod
     def get(self):
         pass
 
     @abstractmethod
-    def click(self, touch, duration=100, algorithm=None) -> bool:
+    def click(self, controller, duration=100, algorithm=None) -> bool:
+
         pass
+
+    def set_controller(self, controller: Touch):
+        self.controller = controller
 
 
 class NoneMatchResult(MatchResult):
@@ -29,6 +36,7 @@ class NoneMatchResult(MatchResult):
 
 class RectMatchResult(MatchResult):
     def __init__(self, x: int, y: int, w: int, h: int):
+        super().__init__()
         self.x = x
         self.y = y
         self.w = w
@@ -37,9 +45,10 @@ class RectMatchResult(MatchResult):
     def get(self):
         return Rect(self.x, self.y, self.w, self.h)
 
-    def click(self, controller: Touch, duration: int = 100,
+    def click(self, controller: Touch = None, duration: int = 100,
               algorithm: RegionPointGenerator = NormalDistributionPointGenerator) -> bool:
         point = algorithm.generate(self.x, self.y, self.w, self.h)
+        controller = self.controller if controller is None else controller
         controller.click(point.x, point.y, duration)
         return True
 
@@ -52,7 +61,8 @@ class PointMatchResult(MatchResult):
     def get(self):
         return self.x, self.y
 
-    def click(self, touch: Touch, duration: int = 100, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
+    def click(self, controller: Touch = None, duration: int = 100, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
         x, y = algorithm.generate(self.x, self.y)
-        touch.click(x, y, duration)
+        controller = self.controller if controller is None else controller
+        controller.click(x, y, duration)
         return True
