@@ -1,8 +1,11 @@
 from .image import (
     # 读写
     imread,
-    imshow,
     imwirte,
+    # 窗口相关
+    destroy_all_windows,
+    destroy_window,
+    imshow,
     # 图像处理
     clip,
     cvt_color,
@@ -14,6 +17,8 @@ from .image import (
     line,
     rectangle,
     put_text,
+    circle,
+    point,
     # 获取图像信息
     get_height,
     get_pixel,
