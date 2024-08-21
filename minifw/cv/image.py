@@ -36,14 +36,14 @@ def imshow(img: cv2.Mat, winname: str = "", wait=True) -> None:
         cv2.waitKey(0)
 
 
-def line(img: cv2.Mat, pt1: Point, pt2: Point, color: str | int | RGB = DEFAULT_COLOR,
+def line(img: cv2.Mat, pt1: Point, pt2: Point, color: str | int | RGB = RED,
          thickness: int = DEFAULT_THICKNESS, line_type: int = DEFAULT_LINE_TYPE, shift: int = DEFAULT_SHIFT):
     rgb = Color.to_rgb(color)
     bgr = (rgb.b, rgb.g, rgb.r)
     return cv2.line(img, (pt1.x, pt1.y), (pt2.x, pt2.y), bgr, thickness, line_type, shift)
 
 
-def rectangle(img: cv2.Mat, region: Rect, color: str | int | RGB == DEFAULT_COLOR, thickness: int = DEFAULT_THICKNESS,
+def rectangle(img: cv2.Mat, region: Rect, color: str | int | RGB = RED, thickness: int = DEFAULT_THICKNESS,
               line_type: int = DEFAULT_LINE_TYPE, shift: int = DEFAULT_SHIFT):
     rgb = Color.to_rgb(color)
     bgr = (rgb.b, rgb.g, rgb.r)
@@ -51,7 +51,7 @@ def rectangle(img: cv2.Mat, region: Rect, color: str | int | RGB == DEFAULT_COLO
                          line_type, shift)
 
 
-def put_text(img: cv2.Mat, text: str, position: Point, color: str | int | RGB = DEFAULT_COLOR,
+def put_text(img: cv2.Mat, text: str, position: Point, color: str | int | RGB = RED,
              font_size: int = DEFAULT_FONT_SIZE,
              font_path: str = DEFAULT_FONT_PATH):
     rgb = Color.to_rgb(color)
@@ -148,8 +148,8 @@ def match_template(img: cv2.Mat, template: cv2.Mat, region: Rect = None, match_t
     # 为带A通道的template创建掩膜
     mask = transparent_to_mask(template) if template.shape[2] == 4 else None
     # # 对图像和模板进行灰度化
-    # img = grayscale(img)
-    # template = grayscale(template)
+    img = grayscale(img)
+    template = grayscale(template)
 
     matches = []
     res = cv2.matchTemplate(
@@ -190,13 +190,14 @@ def match_template_best(img: cv2.Mat, template: cv2.Mat, region: Rect = None, ma
         img_level = img_array[i]
         template_level = template_array[i]
         mask_level = mask_array[i] if template.shape[2] == 4 else None
-        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if template.shape[2] == 4 else cv2.matchTemplate(img_level, template_level, method)
+        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if template.shape[
+                                                                                           2] == 4 else cv2.matchTemplate(
+            img_level, template_level, method)
 
         _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
         if max_val > match_threshold:
             return Point(max_loc[0] * (2 ** i) + x, max_loc[1] * (2 ** i) + y)
-
 
 
 def find_color_inner(img: cv2.Mat, color: int | str | RGB, region: Rect = None, color_threshold: int = 4):
@@ -282,7 +283,7 @@ def get_similarity(img1, img2, algorithm_type="SSIM"):
             sigma12 = cv2.GaussianBlur(img1 * img2, (11, 11), 1.5) - mu1_mu2
 
             ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / (
-                        (mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
+                    (mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2))
             return ssim_map.mean()
 
         if len(img1.shape) == 3:  # 如果图像是彩色的，则分别计算每个通道的SSIM
@@ -305,6 +306,7 @@ def get_similarity(img1, img2, algorithm_type="SSIM"):
     else:
         raise ValueError(f"Unsupported comparison type: {algorithm_type}")
 
+
 def grayscale(img: cv2.Mat) -> cv2.Mat:
     if img.shape[2] == 4:
         return cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
@@ -312,7 +314,26 @@ def grayscale(img: cv2.Mat) -> cv2.Mat:
         return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
         raise ValueError("Invalid image format. Image must be in BGR or BGRA format.")
+
+
 # TODO: 添加特征点匹配
+
+def circle(img: cv2.Mat, center: Point, radius: int, color: int | str | RGB = RED, thickness: int = 1):
+    rgb = Color.to_rgb(color)
+    cv2.circle(img, (center.x, center.y), radius, (rgb.b, rgb.g, rgb.r), thickness)
+
+
+def point(img: cv2.Mat, center: Point,radius: int = 1, color: int | str | RGB = RED):
+    # 绘制填充圆
+    circle(img, center, radius, color, thickness=-1)
+
+
+def destroy_all_windows():
+    cv2.destroyAllWindows()
+
+
+def destroy_window(winname: str):
+    cv2.destroyWindow(winname)
 
 
 if __name__ == "__main__":
