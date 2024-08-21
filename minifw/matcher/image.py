@@ -7,6 +7,9 @@ from minifw.matcher.template import Template
 
 
 class ImageTemplate(Template):
+    def __str__(self) -> str:
+        return f"ImageTemplate(template_path={self.template_path}, region={self.region}, threshold={self.threshold}, level={self.level})"
+
     # 图像缓存池
     cache_pool = {}
 

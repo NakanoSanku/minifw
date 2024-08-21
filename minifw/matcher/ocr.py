@@ -2,11 +2,15 @@ import cv2
 
 from minifw.common import Rect
 from minifw.cv import clip
+from minifw.matcher import Template
 from minifw.matcher.result import RectMatchResult, NoneMatchResult
 from minifw.ocr import OcrService
 
 
-class OCRTemplate(object):
+class OCRTemplate(Template):
+    def __str__(self) -> str:
+        return f"OCRTemplate(text={self.text}, region={self.region}, threshold={self.threshold})"
+
     def __init__(self, text: str, region: Rect = None, threshold: float = 0.6, provider_name: str = None) -> None:
         self.text = text
         self.region = region

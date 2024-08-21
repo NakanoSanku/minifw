@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from build.lib.minifw.common import Point
 from minifw.algo import (RegionPointGenerator, NormalDistributionPointGenerator, OffsetPointGenerator,
                          NoneOffsetPointGenerator)
 from minifw.common import Rect
@@ -16,14 +17,20 @@ class MatchResult(ABC):
 
     @abstractmethod
     def click(self, controller, duration=100, algorithm=None) -> bool:
-
         pass
 
     def set_controller(self, controller: Touch):
         self.controller = controller
 
+    @abstractmethod
+    def __str__(self) -> str:
+        return str(self.get())
+
 
 class NoneMatchResult(MatchResult):
+    def __str__(self) -> str:
+        return "Empty MatchResult"
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -35,6 +42,9 @@ class NoneMatchResult(MatchResult):
 
 
 class RectMatchResult(MatchResult):
+    def __str__(self) -> str:
+        return f"Rect MatchResult:{self.get()}"
+
     def __init__(self, x: int, y: int, w: int, h: int):
         super().__init__()
         self.x = x
@@ -42,7 +52,7 @@ class RectMatchResult(MatchResult):
         self.w = w
         self.h = h
 
-    def get(self):
+    def get(self) -> Rect:
         return Rect(self.x, self.y, self.w, self.h)
 
     def click(self, controller: Touch = None, duration: int = 100,
@@ -52,16 +62,21 @@ class RectMatchResult(MatchResult):
         controller.click(point.x, point.y, duration)
         return True
 
+
 class PointMatchResult(MatchResult):
+    def __str__(self) -> str:
+        return f"Point MatchResult:{self.get()}"
+
     def __init__(self, x: int, y: int) -> None:
         super().__init__()
         self.x = x
         self.y = y
 
-    def get(self):
-        return self.x, self.y
+    def get(self) -> Point:
+        return Point(self.x, self.y)
 
-    def click(self, controller: Touch = None, duration: int = 100, algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
+    def click(self, controller: Touch = None, duration: int = 100,
+              algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
         x, y = algorithm.generate(self.x, self.y)
         controller = self.controller if controller is None else controller
         controller.click(x, y, duration)

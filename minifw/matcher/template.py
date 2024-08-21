@@ -7,5 +7,9 @@ from minifw.matcher.result import MatchResult
 
 class Template(ABC):
     @abstractmethod
-    def match(self, image:cv2.Mat) -> MatchResult:
+    def match(self, image: cv2.Mat) -> MatchResult:
         pass
+
+    @abstractmethod
+    def __str__(self) -> str:
+        return "Template Desc"

@@ -7,6 +7,10 @@ from minifw.matcher.template import Template
 
 
 class MultiColorTemplate(Template):
+
+    def __str__(self) -> str:
+        return f"MultiColorTemplate({self.first_color}, {self.colors}, {self.region}, {self.threshold})"
+
     def __init__(self,
                  first_color: str | int | RGB,
                  colors: list[tuple[int, int, int | str | RGB]],
