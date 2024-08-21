@@ -1,59 +1,120 @@
-import cv2
+import functools
+import time
+from dataclasses import dataclass
+from uuid import uuid4
 
-from minifw.cv import bytes2mat
+import cv2
+from loguru import logger
+
+from minifw.common import RGB
+from minifw.cv import bytes2mat, rectangle, imshow, point, destroy_window
 from minifw.keyboard import Keyboard
 from minifw.matcher import MatchResult, Template
+from minifw.matcher.result import RectMatchResult, PointMatchResult
 from minifw.screencap import ScreenCap
 from minifw.touch import Touch
 
 
+def performance_test(func):
+    """装饰器：测量函数执行时间"""
+
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if self.debug:
+            start_time = time.time()
+            result = func(self, *args, **kwargs)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logger.debug(f"Function {func.__name__} executed in {elapsed_time:.6f} seconds")
+            return result
+        else:
+            return func(self, *args, **kwargs)
+
+    return wrapper
+
+
+@dataclass
+class ScriptInstanceConfig:
+    screencap_method: ScreenCap = None
+    touch_method: Touch = None
+    keyboard_method: Keyboard = None
+    debug: bool = False
+    draw_color: int | str | RGB = RGB(0, 255, 0)
+    draw_size: int = 1
+    win_name: str = str(uuid4())
+
+
 class ScriptInstance(ScreenCap, Touch, Keyboard):
-    def __init__(self, screencap_method: ScreenCap = None, touch_method: Touch = None, keyboard_method: Keyboard = None,
-                 debug=False):
-        self.screencap_method = screencap_method
-        self.touch_method = touch_method
-        self.keyboard_method = keyboard_method
-        self.debug = debug  # TODO: 添加调试模式
-        self.cache_screen: cv2.Mat | None = None  # TODO: 添加画面检测
-        self.timeout = 0  # TODO: 添加超时检测
+    def __init__(self, config: ScriptInstanceConfig):
+        self.config = config
 
     def screencap_raw(self) -> bytes:
-        if self.screencap_method is None:
+        if self.config.screencap_method is None:
             raise Exception("未指定截图方式")
-        return self.screencap_method.screencap_raw()
+        return self.config.screencap_method.screencap_raw()
 
+    @performance_test
     def screencap(self) -> cv2.Mat:
         return bytes2mat(self.screencap_raw())
 
+    @performance_test
     def click(self, x: int, y: int, duration: int = 100):
-        if self.touch_method is None:
+        if self.config.touch_method is None:
             raise Exception("未指定触摸方式")
-        return self.touch_method.click(x, y, duration)
+        self.debug_log(f"Click at {x},{y} in {duration}ms")
+        return self.config.touch_method.click(x, y, duration)
 
+    @performance_test
     def swipe(self, points: list, duration: int = 300):
-        if self.touch_method is None:
+        if self.config.touch_method is None:
             raise Exception("未指定触摸方式")
-        return self.touch_method.swipe(points, duration)
+        self.debug_log(f"Swipe from {points[0]} to {points[-1]} in {duration}ms")
+        return self.config.touch_method.swipe(points, duration)
 
+    @performance_test
     def find(self, template: Template) -> MatchResult:
-        result = template.match(self.screencap())
+        screen = self.screencap()
+        result = template.match(screen)
         result.set_controller(self)
+        if self.config.debug:
+            logger.debug(f"Find {template} in {result.get()}")
+            self.draw_result_in_screen(screen, result)
         return result
 
+    @performance_test
     def key_down(self, key: str) -> None:
-        if self.keyboard_method is None:
+        if self.config.keyboard_method is None:
             raise Exception("未指定键盘输入方式")
-        self.keyboard_method.key_down(key)
+        self.debug_log(f"Key down {key}")
+        self.config.keyboard_method.key_down(key)
 
+    @performance_test
     def key_up(self, key: str) -> None:
-        if self.keyboard_method is None:
+        if self.config.keyboard_method is None:
             raise Exception("未指定键盘输入方式")
-        self.keyboard_method.key_up(key)
+        self.debug_log(f"Key up {key}")
+        self.config.keyboard_method.key_up(key)
 
+    @performance_test
     def find_and_click(self, template: Template, duration: int = 100, algorithm=None) -> bool:
-        return template.match(self.screencap()).click(self, duration, algorithm) if algorithm else template.match(
-            self.screencap()).click(self, duration)
+        result = self.find(template)
+        return result.click(self, duration, algorithm) if algorithm else result.click(self, duration)
 
+    def draw_result_in_screen(self, screen, result: MatchResult):
+        destroy_window(self.config.win_name)
+        # 如果result是RectMatchResult就进行方框绘制
+        if isinstance(result, RectMatchResult):
+            # 显示绘制方框的截图
+            screen = rectangle(screen, result.get(), self.config.draw_color, self.config.draw_size)
+        # 如果result是PointMatchResult就进行方框绘制
+        elif isinstance(result, PointMatchResult):
+            # 显示绘制点的截图
+            screen = point(screen, result.get(), self.config.draw_size, self.config.draw_color)
+        imshow(screen, self.config.win_name)
+
+    def debug_log(self, msg: str):
+        if self.config.debug:
+            logger.debug(msg)
 
 if __name__ == '__main__':
     # screencap_method = ADBCap(serial="127.0.0.1:16384")
