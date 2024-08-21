@@ -30,10 +30,10 @@ def imwirte(filename: str, img: cv2.Mat, ext: str = ".png", params: Sequence[int
         cv2.imencode(ext, img)[1].tofile(filename)
 
 
-def imshow(img: cv2.Mat, winname: str = "", wait=True) -> None:
+def imshow(img: cv2.Mat, winname: str = "", wait=True,wait_time=0) -> None:
     cv2.imshow(winname, img)
     if wait:
-        cv2.waitKey(0)
+        cv2.waitKey(wait_time)
 
 
 def line(img: cv2.Mat, pt1: Point, pt2: Point, color: str | int | RGB = RED,
