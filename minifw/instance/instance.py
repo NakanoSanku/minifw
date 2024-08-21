@@ -105,9 +105,10 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         self.config.keyboard_method.key_up(key)
 
     @performance_test
-    def find_and_click(self, template: Template, duration: int = 100, algorithm=None) -> bool:
+    def find_and_click(self, template: Template, duration: int = 100, algorithm=None) -> MatchResult:
         result = self.find(template)
-        return result.click(self, duration, algorithm) if algorithm else result.click(self, duration)
+        result.click(self, duration, algorithm) if algorithm else result.click(self, duration)
+        return result
 
     def draw_result_in_screen(self, screen, result: MatchResult):
         # 如果result是RectMatchResult就进行方框绘制
