@@ -1,13 +1,14 @@
 import functools
 import time
 from dataclasses import dataclass
+from threading import Thread
+from time import sleep
 from uuid import uuid4
 
 import cv2
 from loguru import logger
 
-from minifw.common import RGB
-from minifw.cv import bytes2mat, rectangle, imshow, point, destroy_window
+from minifw.cv import bytes2mat, rectangle, point, destroy_window
 from minifw.keyboard import Keyboard
 from minifw.matcher import MatchResult, Template
 from minifw.matcher.result import RectMatchResult, PointMatchResult
@@ -20,12 +21,12 @@ def performance_test(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        if self.debug:
+        if self.config.debug:
             start_time = time.time()
             result = func(self, *args, **kwargs)
             end_time = time.time()
             elapsed_time = end_time - start_time
-            logger.debug(f"Function {func.__name__} executed in {elapsed_time:.6f} seconds")
+            logger.debug(f"Function {func.__name__} executed in {elapsed_time * 1000:.6f}ms")
             return result
         else:
             return func(self, *args, **kwargs)
@@ -39,14 +40,16 @@ class ScriptInstanceConfig:
     touch_method: Touch = None
     keyboard_method: Keyboard = None
     debug: bool = False
-    draw_color: int | str | RGB = RGB(0, 255, 0)
+    draw_color: int | str = "#DC143C"
     draw_size: int = 1
-    win_name: str = str(uuid4())
+    winname: str = str(uuid4())
 
 
 class ScriptInstance(ScreenCap, Touch, Keyboard):
     def __init__(self, config: ScriptInstanceConfig):
         self.config = config
+        self.imshow_flag = True
+        self.imshow_thread = None
 
     def screencap_raw(self) -> bytes:
         if self.config.screencap_method is None:
@@ -61,7 +64,7 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
     def click(self, x: int, y: int, duration: int = 100):
         if self.config.touch_method is None:
             raise Exception("未指定触摸方式")
-        self.debug_log(f"Click at {x},{y} in {duration}ms")
+        self.debug_log(f"Click at point({x},{y}) in {duration}ms")
         return self.config.touch_method.click(x, y, duration)
 
     @performance_test
@@ -78,7 +81,13 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         result.set_controller(self)
         if self.config.debug:
             logger.debug(f"Find {template} in {result.get()}")
-            self.draw_result_in_screen(screen, result)
+            self.imshow_flag = False
+            if self.imshow_thread is not None:
+                self.imshow_thread.join()
+            self.imshow_flag = True
+            self.imshow_thread = Thread(target=self.draw_result_in_screen, args=(screen, result))
+            self.imshow_thread.start()
+
         return result
 
     @performance_test
@@ -101,7 +110,6 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         return result.click(self, duration, algorithm) if algorithm else result.click(self, duration)
 
     def draw_result_in_screen(self, screen, result: MatchResult):
-        destroy_window(self.config.win_name)
         # 如果result是RectMatchResult就进行方框绘制
         if isinstance(result, RectMatchResult):
             # 显示绘制方框的截图
@@ -110,17 +118,32 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         elif isinstance(result, PointMatchResult):
             # 显示绘制点的截图
             screen = point(screen, result.get(), self.config.draw_size, self.config.draw_color)
-        imshow(screen, self.config.win_name)
+        cv2.imshow(self.config.winname, screen)
+        while self.imshow_flag:
+            # 检查窗口是否关闭
+            if cv2.getWindowProperty(self.config.winname, cv2.WND_PROP_VISIBLE) < 1:
+                break
+            # 检查是否有按键被按下
+            if cv2.waitKey(1) != -1:
+                break
+        destroy_window(self.config.winname)
 
     def debug_log(self, msg: str):
         if self.config.debug:
             logger.debug(msg)
 
+
 if __name__ == '__main__':
-    # screencap_method = ADBCap(serial="127.0.0.1:16384")
-    # touch_method = MiniTouch(serial="127.0.0.1:16384")
-    # instance = ScriptInstance(screencap_method, touch_method)
-    # t = ImageTemplate(r"C:\Users\KateT\Desktop\QQ截图20240819103933.png",
-    #                   region=Rect(800,110,200,600))
-    # instance.find(t).click(instance,duration=1000)
+    from minifw.screencap import ADBCap
+    from minifw.touch import ADBTouch
+    from minifw.matcher.image import ImageTemplate
+
+    screencap_method = ADBCap(serial="127.0.0.1:16384")
+    touch_method = ADBTouch(serial="127.0.0.1:16384")
+    config = ScriptInstanceConfig(screencap_method=screencap_method, touch_method=touch_method, debug=True)
+    instance = ScriptInstance(config)
+    t = ImageTemplate(r"C:\Users\KateT\Desktop\QQ截图20240819103933.png")
+    instance.find(t).click(instance, duration=150)
+    sleep(3)
+    instance.find(t)
     pass
