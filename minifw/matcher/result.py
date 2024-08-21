@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 
-from build.lib.minifw.common import Point
 from minifw.algo import (RegionPointGenerator, NormalDistributionPointGenerator, OffsetPointGenerator,
                          NoneOffsetPointGenerator)
-from minifw.common import Rect
+from minifw.common import Rect, Point
 from minifw.touch import Touch
 
 
