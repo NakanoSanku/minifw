@@ -333,6 +333,8 @@ def destroy_all_windows():
 
 
 def destroy_window(winname: str):
+    if cv2.getWindowProperty(winname, cv2.WND_PROP_VISIBLE) < 1:
+        return
     cv2.destroyWindow(winname)
 
 
