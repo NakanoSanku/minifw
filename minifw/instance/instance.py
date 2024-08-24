@@ -81,12 +81,13 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         result.set_controller(self)
         if self.config.debug:
             logger.debug(f"Find {template} in {result.get()}")
-            self.imshow_flag = False
-            if self.imshow_thread is not None:
-                self.imshow_thread.join()
-            self.imshow_flag = True
-            self.imshow_thread = Thread(target=self.draw_result_in_screen, args=(screen, result))
-            self.imshow_thread.start()
+            #TODO: DEBUG功能会导致程序卡顿并且模板匹配结果不准确（原因未知）暂时弃用
+            # self.imshow_flag = False
+            # if self.imshow_thread is not None:
+            #     self.imshow_thread.join()
+            # self.imshow_flag = True
+            # self.imshow_thread = Thread(target=self.draw_result_in_screen, args=(screen, result))
+            # self.imshow_thread.start()
 
         return result
 
