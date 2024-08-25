@@ -47,7 +47,7 @@ class MuMuScreenCap(ScreenCap):
     def __get_display_info(self):
         self.width = ctypes.c_int(0)
         self.height = ctypes.c_int(0)
-        result = self.nemu.captureDisplay(
+        result = self.nemu.capture_display(
             self.handle,
             self.display_id,
             0,
@@ -59,17 +59,17 @@ class MuMuScreenCap(ScreenCap):
             print("Failed to get the display size.")
             return None
         # 根据宽度和高度计算缓冲区大小
-        self.bufferSize = self.width.value * self.height.value * 4
+        self.buffer_size = self.width.value * self.height.value * 4
         # 创建一个足够大的缓冲区来存储像素数据
-        self.pixels = (ctypes.c_ubyte * self.bufferSize)()
+        self.pixels = (ctypes.c_ubyte * self.buffer_size)()
 
     def screencap_raw(self) -> bytes:
         self.width = ctypes.c_int(self.width.value)
         self.height = ctypes.c_int(self.height.value)
-        result = self.nemu.captureDisplay(
+        result = self.nemu.capture_display(
             self.handle,
             self.display_id,
-            self.bufferSize,
+            self.buffer_size,
             self.width,
             self.height,
             self.pixels,
