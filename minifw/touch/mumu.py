@@ -70,3 +70,9 @@ class MuMuTouch(Touch):
 
     def __del__(self):
         self.nemu.disconnect(self.handle)
+
+if __name__ == '__main__':
+
+    touch = MuMuTouch(0, r'C:\Program Files\Netease\MuMu Player 12')
+    touch.click(100, 100)
+    touch.swipe([(100, 100), (200, 200), (300, 300)])

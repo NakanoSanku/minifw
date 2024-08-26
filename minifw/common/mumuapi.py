@@ -6,12 +6,12 @@ class MuMuApi:
         self.nemu = ctypes.CDLL(dll_path)
         # 定义返回类型和参数类型
         self.nemu.nemu_connect.restype = ctypes.c_int
-        self.nemu.nemu_connect.arg_types = [ctypes.c_wchar_p, ctypes.c_int]
+        self.nemu.nemu_connect.argtypes = [ctypes.c_wchar_p, ctypes.c_int]
 
-        self.nemu.nemu_disconnect.arg_types = [ctypes.c_int]
+        self.nemu.nemu_disconnect.argtypes = [ctypes.c_int]
 
         self.nemu.nemu_capture_display.restype = ctypes.c_int
-        self.nemu.nemu_capture_display.arg_types = [
+        self.nemu.nemu_capture_display.argtypes = [
             ctypes.c_int,
             ctypes.c_uint,
             ctypes.c_int,
@@ -21,14 +21,14 @@ class MuMuApi:
         ]
 
         self.nemu.nemu_input_text.restype = ctypes.c_int
-        self.nemu.nemu_input_text.arg_types = [
+        self.nemu.nemu_input_text.argtypes = [
             ctypes.c_int,
             ctypes.c_int,
             ctypes.c_char_p,
         ]
 
         self.nemu.nemu_input_event_touch_down.restype = ctypes.c_int
-        self.nemu.nemu_input_event_touch_down.arg_types = [
+        self.nemu.nemu_input_event_touch_down.argtypes = [
             ctypes.c_int,
             ctypes.c_int,
             ctypes.c_int,
@@ -36,18 +36,18 @@ class MuMuApi:
         ]
 
         self.nemu.nemu_input_event_touch_up.restype = ctypes.c_int
-        self.nemu.nemu_input_event_touch_up.arg_types = [
+        self.nemu.nemu_input_event_touch_up.argtypes = [
             ctypes.c_int, ctypes.c_int]
 
         self.nemu.nemu_input_event_key_down.restype = ctypes.c_int
-        self.nemu.nemu_input_event_key_down.arg_types = [
+        self.nemu.nemu_input_event_key_down.argtypes = [
             ctypes.c_int,
             ctypes.c_int,
             ctypes.c_int,
         ]
 
         self.nemu.nemu_input_event_key_up.restype = ctypes.c_int
-        self.nemu.nemu_input_event_key_up.arg_types = [
+        self.nemu.nemu_input_event_key_up.argtypes = [
             ctypes.c_int,
             ctypes.c_int,
             ctypes.c_int,
@@ -67,14 +67,14 @@ class MuMuApi:
     def input_text(self, handle, size, buf):
         return self.nemu.nemu_input_text(handle, size, buf)
 
-    def input_event_touch_down(self, handle, display_id, x_point, y_point):
-        return self.nemu.nemu_input_event_touch_down(handle, display_id, x_point, y_point)
+    def input_event_touch_down(self, handle, display_id, xPoint, yPoint):
+        return self.nemu.nemu_input_event_touch_down(handle, display_id, xPoint, yPoint)
 
     def input_event_touch_up(self, handle, display_id):
         return self.nemu.nemu_input_event_touch_up(handle, display_id)
 
-    def input_event_key_down(self, handle, display_id, key_code):
-        return self.nemu.nemu_input_event_key_down(handle, display_id, key_code)
+    def input_event_key_down(self, handle, display_id, keyCode):
+        return self.nemu.nemu_input_event_key_down(handle, display_id, keyCode)
 
-    def input_event_key_up(self, handle, display_id, key_code):
-        return self.nemu.nemu_input_event_key_up(handle, display_id, key_code)
+    def input_event_key_up(self, handle, display_id, keyCode):
+        return self.nemu.nemu_input_event_key_up(handle, display_id, keyCode)

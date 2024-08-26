@@ -34,9 +34,9 @@ class MuMuScreenCap(ScreenCap):
         self.display_id = display_id
         self.instance_index = instance_index
         self.emulator_install_path = emulator_install_path
-        self.dll_path = emulator_install_path + \
-                        MUMU_API_DLL_PATH if dll_path is None else dll_path
-        self.nemu = MuMuApi(self.dll_path)
+        self.dllPath = emulator_install_path + \
+                       MUMU_API_DLL_PATH if dll_path is None else dll_path
+        self.nemu = MuMuApi(self.dllPath)
         # 连接模拟器
         self.handle = self.nemu.connect(
             self.emulator_install_path, self.instance_index)
@@ -99,3 +99,8 @@ class MuMuScreenCap(ScreenCap):
 
     def __del__(self):
         self.nemu.disconnect(self.handle)
+
+
+if __name__ == '__main__':
+    cap = MuMuScreenCap(0,r"C:\Program Files\Netease\MuMu Player 12")
+    cap.save_screencap()
