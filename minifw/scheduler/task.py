@@ -101,12 +101,13 @@ class TaskQueue:
 
 
 class TaskScheduler:
-    def __init__(self) -> None:
+    def __init__(self, sleep_time: int = 0) -> None:
         self.status = TaskSchedulerStatus.STOP
         self.queue = TaskQueue()
         self.thread: Thread | None = None
         self.daemon_thread: Thread | None = None
         self.daemon_target = None
+        self.sleep_time = sleep_time / 1000
 
     def start(self):
         if self.status == TaskSchedulerStatus.STOP:
@@ -128,6 +129,7 @@ class TaskScheduler:
                 self.status = TaskSchedulerStatus.STOP
                 return
             task.run()
+            time.sleep(self.sleep_time)
 
     def stop(self):
         if self.status != TaskSchedulerStatus.STOP:
@@ -158,21 +160,22 @@ class TaskScheduler:
 if __name__ == '__main__':
     class TestTask(Task):
         def __init__(self, s_id):
-            super().__init__() # 必须调用父类初始化方法
+            super().__init__()  # 必须调用父类初始化方法
             self.s_id = s_id
 
         def run(self):
-            self.before_run() # 任务开始前调用
+            self.before_run()  # 任务开始前调用
             logger.info("TestTask")
             logger.info(self.s_id)
             time.sleep(5)
-            self.after_run() # 任务完成后调用
+            self.after_run()  # 任务完成后调用
 
         def before_run(self):
-            super().before_run() #必须调用父类方法
+            super().before_run()  #必须调用父类方法
 
         def after_run(self):
-            super().after_run() #必须调用父类方法
+            super().after_run()  #必须调用父类方法
+
 
     def daemon_target():
         while 1:
