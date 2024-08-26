@@ -175,24 +175,16 @@ def match_template_best(img: cv2.Mat, template: cv2.Mat, region: Rect = None, ma
     # 设置金字塔等级
     if level is None:
         level = select_pyramid_level(img, template)
-
+    # 灰度化
+    img = grayscale(img)
+    template = grayscale(template)
     # 创建图像金字塔列表
     img_array = generate_pyramid(img, level)
     template_array = generate_pyramid(template, level)
-    mask_array = []
-    if template.shape[2] == 4:
-        # 为带A通道的template创建掩膜
-        mask_array = [transparent_to_mask(t) for t in template_array]
-    # 灰度化
-    img_array = [grayscale(i) for i in img_array]
-    template_array = [grayscale(t) for t in template_array]
     for i in reversed(range(level + 1)):
         img_level = img_array[i]
         template_level = template_array[i]
-        mask_level = mask_array[i] if template.shape[2] == 4 else None
-        res = cv2.matchTemplate(img_level, template_level, method, mask=mask_level) if template.shape[
-                                                                                           2] == 4 else cv2.matchTemplate(
-            img_level, template_level, method)
+        res = cv2.matchTemplate(img_level, template_level, method)
 
         _, max_val, _, max_loc = cv2.minMaxLoc(res)
 
