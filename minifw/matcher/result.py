@@ -25,6 +25,9 @@ class MatchResult(ABC):
     def __str__(self) -> str:
         return str(self.get())
 
+    def is_emtpy(self):
+        return self.get() is None
+
 
 class NoneMatchResult(MatchResult):
     def __str__(self) -> str:
@@ -54,7 +57,7 @@ class RectMatchResult(MatchResult):
     def get(self) -> Rect:
         return Rect(self.x, self.y, self.w, self.h)
 
-    def click(self, controller: Touch = None, duration: int = 100,
+    def click(self, controller: Touch = None, duration: int = 150,
               algorithm: RegionPointGenerator = NormalDistributionPointGenerator) -> bool:
         point = algorithm.generate(self.x, self.y, self.w, self.h)
         controller = self.controller if controller is None else controller
@@ -74,7 +77,7 @@ class PointMatchResult(MatchResult):
     def get(self) -> Point:
         return Point(self.x, self.y)
 
-    def click(self, controller: Touch = None, duration: int = 100,
+    def click(self, controller: Touch = None, duration: int = 150,
               algorithm: OffsetPointGenerator = NoneOffsetPointGenerator) -> bool:
         x, y = algorithm.generate(self.x, self.y)
         controller = self.controller if controller is None else controller
