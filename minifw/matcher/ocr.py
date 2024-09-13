@@ -29,3 +29,27 @@ class OCRTemplate(Template):
                 if r.text == self.text and r.confidence > self.threshold:
                     return RectMatchResult(r.region.x + x, r.region.y + y, r.region.w, r.region.h)
         return NoneMatchResult()
+
+    def from_dict(self, data: dict):
+        text = data.get("text")
+        if text is None:
+            raise ValueError("text must be not None")
+        if not isinstance(text, str):
+            raise TypeError("text must be str")
+
+        tmp_region: list[int] | tuple[int] | Rect | None = data.get('region', None)
+        if isinstance(tmp_region, (list, tuple)):
+            region = Rect(tmp_region[0], tmp_region[1], tmp_region[2], tmp_region[3])
+        elif isinstance(tmp_region, Rect):
+            region = tmp_region
+        elif tmp_region is None:
+            region = None
+        else:
+            raise TypeError("region must be list, tuple or Rect")
+
+        threshold = data.get('threshold', 0.6)
+        if threshold < 0 or threshold > 1:
+            raise ValueError("threshold must be between 0 and 1")
+
+        provider_name = data.get("provider_name", None)
+        return OCRTemplate(text, region, threshold, provider_name)

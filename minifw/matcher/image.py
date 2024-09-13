@@ -1,3 +1,4 @@
+import os
 import cv2
 
 from minifw.common import Rect
@@ -36,3 +37,30 @@ class ImageTemplate(Template):
 
         h, w = get_height(self.template), get_width(self.template)
         return RectMatchResult(result.x, result.y, w, h)
+
+    def from_dict(self, data: dict):
+        template_path = data.get('template_path')
+        if template_path is None:
+            raise ValueError("template_path must be specified")
+        if not os.path.exists(template_path):
+            raise FileNotFoundError(template_path)
+
+        tmp_region: list[int] | tuple[int] | Rect | None = data.get('region', None)
+        if isinstance(tmp_region, (list, tuple)):
+            region = Rect(tmp_region[0], tmp_region[1], tmp_region[2], tmp_region[3])
+        elif isinstance(tmp_region, Rect):
+            region = tmp_region
+        elif tmp_region is None:
+            region = None
+        else:
+            raise TypeError("region must be list, tuple or Rect")
+
+        threshold = data.get('threshold', 0.95)
+        if threshold < 0 or threshold > 1:
+            raise ValueError("threshold must be between 0 and 1")
+
+        level: int | None = data.get('level', None)
+        if level is not None and level < 0:
+            raise ValueError("level must be greater than or equal to 0")
+
+        return ImageTemplate(template_path, region, threshold, level)

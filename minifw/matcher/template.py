@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 
 import cv2
@@ -13,3 +14,11 @@ class Template(ABC):
     @abstractmethod
     def __str__(self) -> str:
         return "Template Desc"
+
+    @abstractmethod
+    def from_dict(self, data: dict):
+        pass
+
+
+    def from_json(self, data: str):
+        return self.from_dict(json.loads(data))
