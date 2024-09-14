@@ -1,2 +1,2 @@
-from minifw.instance.instance import ScriptInstance,ScriptInstanceConfig
+from minifw.instance.instance import ScriptInstance
 
