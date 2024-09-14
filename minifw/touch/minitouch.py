@@ -5,6 +5,7 @@ import time
 from adbutils import adb
 from loguru import logger
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.touch.config import ADB_EXECUTOR, MINITOUCH_SERVER_START_DELAY, MINITOUCH_REMOTE_ADDR, DEFAULT_HOST, \
     DEFAULT_BUFFER_SIZE, MINITOUCH_PATH, MINITOUCH_REMOTE_PATH
 from minifw.touch.touch import Touch
@@ -27,6 +28,8 @@ class MiniTouch(Touch):
         self.minitouch_process = None  # minitouch服务进程
         self.minitouch_port = None  # Socket端口记录
         self.pid = None  # minitouch服务pid记录
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)  # adb设备
 
         self.__get_device_info()  # 获取设备信息

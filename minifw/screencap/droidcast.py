@@ -4,6 +4,7 @@ import requests
 from adbutils import adb
 from loguru import logger
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.screencap.config import DROIDCAST_APK_ANDROID_PATH, DROIDCAST_APK_PATH, DROIDCAST_APK_VERSION, ADB_EXECUTOR, \
     DROIDCAST_PORT, \
     DROIDCAST_APK_PACKAGE_NAME, DROIDCAST_PM_PATH_SHELL, DROIDCAST_START_CMD
@@ -20,6 +21,8 @@ class DroidCast(ScreenCap):
             display_id (int): 显示器id use `adb shell dumpsys SurfaceFlinger --display-id` to get
             format (str): 截图编码格式
         """
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)
         self.__class_path = DROIDCAST_APK_ANDROID_PATH
         self.__display_id = display_id

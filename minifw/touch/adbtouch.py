@@ -1,5 +1,6 @@
 from adbutils import adb
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.touch.touch import Touch
 
 
@@ -11,6 +12,8 @@ class ADBTouch(Touch):
         Args:
             serial (str): 设备id
         """
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)
 
     def click(self, x: int, y: int, duration: int = 100):

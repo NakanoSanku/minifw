@@ -2,6 +2,7 @@ import subprocess
 
 from adbutils import adb
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.screencap.config import ADB_EXECUTOR
 from minifw.screencap.screencap import ScreenCap
 
@@ -14,6 +15,8 @@ class ADBCap(ScreenCap):
         Args:
             serial (str): 设备id
         """
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)
         self.__display_id = display_id
 

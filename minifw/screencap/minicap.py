@@ -7,6 +7,7 @@ import time
 from adbutils import adb
 from loguru import logger
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.screencap.config import MINICAP_PATH, MINICAPSO_PATH, ADB_EXECUTOR, MNC_HOME, MNC_SO_HOME, MINICAP_COMMAND, \
     MINICAP_START_TIMEOUT, DEFAULT_HOST
 from minifw.screencap.screencap import ScreenCap
@@ -176,6 +177,8 @@ class MiniCap(ScreenCap):
             host (str, "127.0.0.1"): 链接minicap地址
             timeout (int, optional): 获取截图的超时时间. Defaults to 100ms. 设置成None表示永远不是使用缓存
         """
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)
         self.__skip_frame = skip_frame
         self.__use_stream = use_stream

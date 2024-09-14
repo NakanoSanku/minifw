@@ -3,6 +3,7 @@ import socket
 from adbutils import adb
 from loguru import logger
 
+from minifw.common.exception import ADBDeviceUnFound
 from minifw.touch import config
 from minifw.touch.touch import Touch
 from minifw.touch.utils import CommandBuilder, str2byte
@@ -20,6 +21,8 @@ class MaaTouch(Touch):
     _maatouch_stream_storage = None
 
     def __init__(self, serial):
+        if serial not in [device.serial for device in adb.device_list()]:
+            raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
         self.__adb = adb.device(serial)
         logger.debug("MaaTouch install")
         self.__adb.push(config.MAATOUCH_FILEPATH_LOCAL, config.MAATOUCH_FILEPATH_REMOTE)
