@@ -16,7 +16,7 @@ def performance_test(func):
 
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        if self.config.debug:
+        if self.debug:
             start_time = time.time()
             result = func(self, *args, **kwargs)
             end_time = time.time()
