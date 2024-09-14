@@ -1,0 +1,1 @@
+MUMU_INSTALL_PATH = r"C:\Program Files\Netease\MuMu Player 12"

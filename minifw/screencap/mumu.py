@@ -4,6 +4,7 @@ import numpy as np
 from turbojpeg import TurboJPEG, TJSAMP_422
 
 from minifw.common import MuMuApi, MUMU_API_DLL_PATH, TURBO_JPEG_DLL_PATH
+from minifw.common.config import MUMU_INSTALL_PATH
 from minifw.screencap.screencap import ScreenCap
 
 
@@ -11,7 +12,7 @@ class MuMuScreenCap(ScreenCap):
     def __init__(
             self,
             instance_index,
-            emulator_install_path: str,
+            emulator_install_path: str = MUMU_INSTALL_PATH,
             dll_path: str = None,
             display_id: int = 0,
             quality: int = 100,

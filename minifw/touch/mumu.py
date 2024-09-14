@@ -2,6 +2,7 @@ import ctypes
 import time
 
 from minifw.common import MuMuApi, MUMU_API_DLL_PATH
+from minifw.common.config import MUMU_INSTALL_PATH
 from minifw.touch.touch import Touch
 
 
@@ -9,7 +10,7 @@ class MuMuTouch(Touch):
     def __init__(
             self,
             instance_index,
-            emulator_install_path: str,
+            emulator_install_path: str = MUMU_INSTALL_PATH,
             dll_path: str = None,
             display_id: int = 0,
     ):
@@ -71,8 +72,8 @@ class MuMuTouch(Touch):
     def __del__(self):
         self.nemu.disconnect(self.handle)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     touch = MuMuTouch(0, r'C:\Program Files\Netease\MuMu Player 12')
     touch.click(100, 100)
     touch.swipe([(100, 100), (200, 200), (300, 300)])
