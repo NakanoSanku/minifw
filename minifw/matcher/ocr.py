@@ -30,7 +30,8 @@ class OCRTemplate(Template):
                     return RectMatchResult(r.region.x + x, r.region.y + y, r.region.w, r.region.h)
         return NoneMatchResult()
 
-    def from_dict(self, data: dict):
+    @staticmethod
+    def from_dict(data: dict):
         text = data.get("text")
         if text is None:
             raise ValueError("text must be not None")

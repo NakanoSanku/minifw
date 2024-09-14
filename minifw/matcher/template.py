@@ -15,10 +15,10 @@ class Template(ABC):
     def __str__(self) -> str:
         return "Template Desc"
 
-    @abstractmethod
-    def from_dict(self, data: dict):
+    @staticmethod
+    def from_dict(data: dict):
         pass
 
-
-    def from_json(self, data: str):
-        return self.from_dict(json.loads(data))
+    @classmethod
+    def from_json(cls, data: str):
+        return cls.from_dict(json.loads(data))

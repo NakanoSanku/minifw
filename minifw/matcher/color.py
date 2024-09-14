@@ -27,7 +27,8 @@ class MultiColorTemplate(Template):
             return NoneMatchResult()
         return PointMatchResult(result.x, result.y)
 
-    def from_dict(self, data: dict):
+    @staticmethod
+    def from_dict(data: dict):
         first_color = data.get('first_color')
         if not isinstance(first_color, (str, int, RGB)):
             raise TypeError("first_color must be str, int or RGB")

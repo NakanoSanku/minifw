@@ -38,7 +38,8 @@ class ImageTemplate(Template):
         h, w = get_height(self.template), get_width(self.template)
         return RectMatchResult(result.x, result.y, w, h)
 
-    def from_dict(self, data: dict):
+    @staticmethod
+    def from_dict(data: dict):
         template_path = data.get('template_path')
         if template_path is None:
             raise ValueError("template_path must be specified")
