@@ -15,7 +15,7 @@ class MatchResult(ABC):
         pass
 
     @abstractmethod
-    def click(self, controller, duration=100, algorithm=None) -> bool:
+    def click(self, controller=None, duration=100, algorithm=None) -> bool:
         pass
 
     def set_controller(self, controller: Touch):

@@ -82,12 +82,6 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         self.debug_log(f"Key up {key}")
         self.keyboard_method.key_up(key)
 
-    @performance_test
-    def find_and_click(self, template: Template, duration: int = 150, algorithm=None) -> MatchResult:
-        result = self.find(template)
-        result.click(self, duration, algorithm) if algorithm else result.click(self, duration)
-        return result
-
     def debug_log(self, msg: str):
         if self.debug:
             logger.debug(msg)
@@ -107,7 +101,7 @@ if __name__ == '__main__':
     touch_method = ADBTouch(serial="127.0.0.1:16384")
     instance = ScriptInstance(screencap_method=screencap_method, touch_method=touch_method, debug=True)
     t = ImageTemplate(r"C:\Users\KateT\Desktop\QQ截图20240819103933.png")
-    instance.find(t).click(instance, duration=150)
+    instance.find(t).click(duration=150)
     instance.sleep(3)
     instance.find(t)
     pass
