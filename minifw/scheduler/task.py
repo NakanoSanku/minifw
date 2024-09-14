@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from threading import Thread, Lock
+from threading import Thread
 from uuid import uuid4, UUID
 
 from loguru import logger
@@ -56,6 +56,7 @@ class Task(ABC):
     def __str__(self):
         return f"{self.__class__.__name__}"
 
+
 @dataclass
 class TaskQueueItem:
     task: Task
@@ -67,7 +68,6 @@ class TaskQueueItem:
 class TaskQueue:
     def __init__(self) -> None:
         self.queue: list[TaskQueueItem] = []
-        self.lock = Lock()
 
     def get(self, uuid: UUID):
         for item in self.queue:
@@ -75,40 +75,34 @@ class TaskQueue:
                 return item.task
 
     def put(self, task: Task, priority: int = 0, run_time: datetime = datetime.now()) -> UUID:
-        with self.lock:
-            item = TaskQueueItem(task=task, priority=priority, run_time=run_time)
-            self.queue.append(item)
-            self.sort()
-            return self.queue[-1].uuid
+        item = TaskQueueItem(task=task, priority=priority, run_time=run_time)
+        self.queue.append(item)
+        self.sort()
+        return self.queue[-1].uuid
 
     def clear(self):
-        with self.lock:
-            self.queue.clear()
+        self.queue.clear()
 
     def size(self):
-        with self.lock:
-            return len(self.queue)
+        return len(self.queue)
 
     def remove(self, uuid: UUID):
-        with self.lock:
-            for item in self.queue:
-                if item.uuid == uuid:
-                    self.queue.remove(item)
-                    return True
-            return False
+        for item in self.queue:
+            if item.uuid == uuid:
+                self.queue.remove(item)
+                return True
+        return False
 
     def get_next_task(self):
-        with self.lock:
-            for item in self.queue:
-                if item.run_time <= datetime.now() and item.task.get_status() != TaskStatus.COMPLETED:
-                    return item.task
+        for item in self.queue:
+            if item.run_time <= datetime.now() and item.task.get_status() != TaskStatus.COMPLETED:
+                return item.task
 
     def sort(self, reverse: bool = False):
-        with self.lock:
-            def get_priority(item: TaskQueueItem):
-                return item.priority
+        def get_priority(item: TaskQueueItem):
+            return item.priority
 
-            self.queue.sort(key=get_priority, reverse=reverse)
+        self.queue.sort(key=get_priority, reverse=reverse)
 
 
 class TaskScheduler:
@@ -128,10 +122,11 @@ class TaskScheduler:
 
     def run(self):
         while self.status != TaskSchedulerStatus.STOP:
-            if self.daemon_thread is None or not self.daemon_thread.is_alive():
-                logger.warning("守护线程已停止，重新启动...")
-                self.daemon_thread = Thread(target=self.daemon_target, daemon=True)
-                self.daemon_thread.start()
+            if self.daemon_target is not None:
+                if self.daemon_thread is None or not self.daemon_thread.is_alive():
+                    logger.warning("守护线程已停止，重新启动...")
+                    self.daemon_thread = Thread(target=self.daemon_target, daemon=True)
+                    self.daemon_thread.start()
             if self.status == TaskSchedulerStatus.WAITING:
                 time.sleep(0.1)  # Reduce CPU consumption
                 continue
