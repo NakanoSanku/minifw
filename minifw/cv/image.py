@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from minifw.common import Point, RGB, Rect, ImageSize, is_rect_in_rect
+from minifw.common import Point, RGB, Rect, ImageSize, is_rect_in_rect, is_point_in_rect
 from minifw.cv.color import Color
 
 RED = RGB(b=0, g=0, r=255)
@@ -30,7 +30,7 @@ def imwirte(filename: str, img: cv2.Mat, ext: str = ".png", params: Sequence[int
         cv2.imencode(ext, img)[1].tofile(filename)
 
 
-def imshow(img: cv2.Mat, winname: str = "", wait=True,wait_time=0) -> None:
+def imshow(img: cv2.Mat, winname: str = "", wait=True, wait_time=0) -> None:
     cv2.imshow(winname, img)
     if wait:
         cv2.waitKey(wait_time)
@@ -234,7 +234,11 @@ def find_multi_colors(img: cv2.Mat, firstColor: int | str | RGB, colors: list[tu
         return None
     for result in first_color_points:
         for x, y, target_color in colors:
-            offset_color = Color.to_rgb(get_pixel(img, x + result.x, y + result.y))
+            dx, dy = x + result.x, y + result.y
+            if not is_point_in_rect(Point(dx, dy), Rect(0, 0, get_width(img), get_height(img))):
+                result = None
+                break
+            offset_color = Color.to_rgb(get_pixel(img, dx, dy))
             pre_color = Color.to_rgb(target_color)
             is_similar = Color.is_similar(offset_color, pre_color, threshold=color_threshold)
             if not is_similar:
@@ -315,7 +319,7 @@ def circle(img: cv2.Mat, center: Point, radius: int, color: int | str | RGB = RE
     cv2.circle(img, (center.x, center.y), radius, (rgb.b, rgb.g, rgb.r), thickness)
 
 
-def point(img: cv2.Mat, center: Point,radius: int = 1, color: int | str | RGB = RED):
+def point(img: cv2.Mat, center: Point, radius: int = 1, color: int | str | RGB = RED):
     # 绘制填充圆
     circle(img, center, radius, color, thickness=-1)
 
