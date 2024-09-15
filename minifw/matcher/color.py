@@ -12,7 +12,7 @@ class MultiColorTemplate(Template):
 
     def __init__(self,
                  first_color: str | int | RGB,
-                 colors: list[tuple[int, int, int | str | RGB]],
+                 colors: list[tuple[int | str | RGB]],
                  region: Rect = None,
                  threshold: int = 4) -> None:
         super().__init__()
