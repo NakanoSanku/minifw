@@ -294,3 +294,18 @@ class MiniCap(ScreenCap):
 
     def __del__(self):
         self.__stop_minicap_by_stream()
+
+
+if __name__ == '__main__':
+    import cv2
+    import time
+    import numpy as np
+    d = MiniCap(serial="127.0.0.1:16384",use_stream=False)
+    s= time.time()
+    pixels = d.screencap_raw()
+    np_arr = np.frombuffer(pixels[:(720*1280*4)], dtype=np.uint8).reshape((720, 1280, 4))
+    np_arr = cv2.cvtColor(np_arr,cv2.COLOR_RGBA2BGR)
+    cv2.imwrite("test.png", np_arr)
+    # print((time.time() - s) * 1000)
+    # cv2.imshow("",np_arr)
+    # cv2.waitKey(0)
