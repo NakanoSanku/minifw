@@ -1,9 +1,8 @@
 import ctypes
 
 import numpy as np
-from turbojpeg import TurboJPEG, TJSAMP_422
 
-from minifw.common import MuMuApi, MUMU_API_DLL_PATH, TURBO_JPEG_DLL_PATH
+from minifw.common import MuMuApi, MUMU_API_DLL_PATH
 from minifw.common.config import MUMU_INSTALL_PATH
 from minifw.screencap.screencap import ScreenCap
 
@@ -14,9 +13,7 @@ class MuMuScreenCap(ScreenCap):
             instance_index,
             emulator_install_path: str = MUMU_INSTALL_PATH,
             dll_path: str = None,
-            display_id: int = 0,
-            quality: int = 100,
-            jpeg_subsample=TJSAMP_422
+            display_id: int = 0
     ):
         """
         __init__ MumuApi 截图
@@ -29,7 +26,6 @@ class MuMuScreenCap(ScreenCap):
             dll_path (str, optional): dll文件存放路径，一般会根据模拟器路径获取. Defaults to None.
             display_id (int, optional): 显示窗口id，一般无需填写. Defaults to 0.
         """
-        self.quality = quality
         self.height = None
         self.width = None
         self.display_id = display_id
@@ -42,8 +38,6 @@ class MuMuScreenCap(ScreenCap):
         self.handle = self.nemu.connect(
             self.emulator_install_path, self.instance_index)
         self.__get_display_info()
-        self.turbo_jpeg_encoder = TurboJPEG(TURBO_JPEG_DLL_PATH)
-        self.jpeg_subsample = jpeg_subsample
 
     def __get_display_info(self):
         self.width = ctypes.c_int(0)
@@ -84,19 +78,7 @@ class MuMuScreenCap(ScreenCap):
         pixel_array = np.frombuffer(self.pixels, dtype=np.uint8).reshape(
             (self.height.value, self.width.value, 4))
         flipped_rgb_pixel_array = pixel_array[::-1, :, [2, 1, 0]]
-        # TurboJPEG方案
-        data = self.turbo_jpeg_encoder.encode(np.ascontiguousarray(
-            flipped_rgb_pixel_array), quality=self.quality, jpeg_subsample=self.jpeg_subsample)
-        # Opencv方案
-        # _ ,data = cv2.imencode(self.encode,flipped_rgb_pixel_array)
-        # Pillow方案
-        # image = Image.fromarray(flipped_rgb_pixel_array)
-        # encoded_image = io.BytesIO()
-        # image.save(encoded_image, format='JPEG', quality=95)
-        # encoded_image.seek(0)
-        # data = encoded_image.getvalue()
-        # _, data = cv2.imencode(self.encode, flipped_rgb_pixel_array)
-        return data
+        return flipped_rgb_pixel_array.tobytes()
 
     def __del__(self):
         self.nemu.disconnect(self.handle)
