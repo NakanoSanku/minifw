@@ -27,7 +27,7 @@ class ADBCap(ScreenCap):
         :return: 截图的字节数据。
         """
         try:
-            adb_command = [ADB_EXECUTOR, "-s", self.__adb.serial, "exec-out", "screencap", "-p"]
+            adb_command = [ADB_EXECUTOR, "-s", self.__adb.serial, "exec-out", "screencap"]
             if self.__display_id:
                 adb_command.extend(["-d", str(self.__display_id)])
             process = subprocess.Popen(
@@ -45,3 +45,15 @@ class ADBCap(ScreenCap):
             raise RuntimeError(f"Error while screencapping the device: {e}")
 
 
+if __name__ == '__main__':
+    import cv2
+    import time
+    import numpy as np
+    d = ADBCap(serial="127.0.0.1:16384")
+    s= time.time()
+    pixels = d.screencap_raw()
+    np_arr = np.frombuffer(pixels[:(720*1280*4)], dtype=np.uint8).reshape((720, 1280, 4))
+    np_arr = cv2.cvtColor(np_arr,cv2.COLOR_RGBA2BGR)
+    print((time.time() - s) * 1000)
+    cv2.imshow("",np_arr)
+    cv2.waitKey(0)
