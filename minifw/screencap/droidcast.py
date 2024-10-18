@@ -12,7 +12,7 @@ from minifw.screencap.screencap import ScreenCap
 
 
 class DroidCast(ScreenCap):
-    def __init__(self, serial, display_id: int = None, format: str = "jpeg") -> None:
+    def __init__(self, serial, display_id: int = None, format: str = "raw") -> None:
         """
         __init__ DroidCast截图方法
 
@@ -81,3 +81,16 @@ class DroidCast(ScreenCap):
 
     def __str__(self) -> str:
         return "DroidCast-url:{}".format(self.__droidcast_url)
+
+if __name__ == '__main__':
+    import cv2
+    import numpy as np
+    import time
+    d = DroidCast(serial="127.0.0.1:16384", format="raw")
+    s= time.time()
+    pixels = d.screencap_raw()
+    np_arr = np.frombuffer(pixels, dtype=np.uint8).reshape((720, 1280, 4))
+    np_arr = cv2.cvtColor(np_arr,cv2.COLOR_RGBA2BGR)
+    print((time.time() - s) * 1000)
+    cv2.imshow("",np_arr)
+    cv2.waitKey(0)
