@@ -3,6 +3,8 @@ import socket
 import subprocess
 import threading
 
+import cv2
+import numpy as np
 from adbutils import adb
 from loguru import logger
 
@@ -13,16 +15,14 @@ from minifw.screencap.screencap import ScreenCap
 
 
 class MiniCapStream:
-    def __init__(self, host, port, timeout=None) -> None:
-        self.use_cache = None
-        self.cache = None
+    def __init__(self, host, port) -> None:
         self.sock = None
         self.host = host
         self.port = port
         self.data = None
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self.read_stream, daemon=True)
-        self.timeout = timeout
+        self.data_available = threading.Condition()
 
     def start(self):
         try:
@@ -83,7 +83,6 @@ class MiniCapStream:
                     elif 18 <= read_banner_bytes <= 21:
                         banner['virtualHeight'] += (chunk[cursor] <<
                                                     ((read_banner_bytes - 18) * 8)) & 0xFFFFFFFF
-                        frame_body_length = banner['virtualWidth'] * banner['virtualHeight'] * 4
                     elif read_banner_bytes == 22:
                         banner['orientation'] = chunk[cursor] * 90
                     elif read_banner_bytes == 23:
@@ -98,9 +97,12 @@ class MiniCapStream:
                     max_buf_size = frame_body_length
                     if len(chunk) - cursor >= frame_body_length:
                         frame_body.extend(chunk[cursor:cursor + frame_body_length])
-                        self.data = frame_body
+                        with self.data_available:
+                            self.data = frame_body
+                            self.data_available.notify_all()  # 通知等待的线程
                         cursor += frame_body_length
-                        frame_body_length = read_frame_bytes = 0
+                        read_frame_bytes = 0
+                        frame_body_length = banner['virtualWidth'] * banner['virtualHeight'] * 4
                         frame_body = bytearray()
                     else:
                         frame_body.extend(chunk[cursor:])
@@ -115,32 +117,10 @@ class MiniCapStream:
         self.thread.join()
 
     def next_image(self):
-        self.cache = self.data  # 将上一张图像数据缓存下来
-        self.data = None  # 将当前图像数据设为None
-        self.use_cache = False  # 默认不采用缓存
-
-        def timeout():
-            if self.cache is None:
-                logger.warning("MiniCap Image Cache Is None")
-            else:
-                logger.debug("MiniCap 获取图像超时，返回缓存图像")
-                self.use_cache = True
-
-        timeout_thread = threading.Timer(self.timeout / 1000, timeout)
-        # 如果self.timeout = None 代表永远不使用缓存
-        if self.timeout is not None:
-            timeout_thread.start()
-
-        while not self.data:
-            # 自旋直到使用缓存或者当前图像数据已获取成功
-            if self.use_cache:
-                self.data = self.cache
-                return self.data
-            continue
-
-        if self.timeout is not None:
-            timeout_thread.cancel()  # 取消定时器
-        return self.data
+        with self.data_available:
+            while self.data is None or len(self.data) == 0:
+                self.data_available.wait()  # 等待数据可用
+            return self.data
 
 
 class MiniCapUnSupportError(Exception):
@@ -156,7 +136,6 @@ class MiniCap(ScreenCap):
             skip_frame=True,
             use_stream=True,
             host=DEFAULT_HOST,
-            timeout=100
     ):
         """
         __init__ minicap截图方式
@@ -168,7 +147,6 @@ class MiniCap(ScreenCap):
             skip_frame(bool,optional): 当无法快速获得截图时，跳过这个帧
             use_stream (bool, optional): 是否使用stream的方式. Defaults to True.
             host (str, "127.0.0.1"): 链接minicap地址
-            timeout (int, optional): 获取截图的超时时间. Defaults to 100ms. 设置成None表示永远不是使用缓存
         """
         if serial not in [device.serial for device in adb.device_list()]:
             raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
@@ -178,7 +156,6 @@ class MiniCap(ScreenCap):
         self.__quality = quality
         self.__rate = rate
         self.__host = host
-        self.__timeout = timeout
         self.__get_device_info()
 
         self.__minicap_kill()
@@ -230,6 +207,8 @@ class MiniCap(ScreenCap):
     def __get_device_info(self):
         self.__abi = self.__adb.getprop("ro.product.cpu.abi")
         self.__sdk = self.__adb.getprop("ro.build.version.sdk")
+        self.width = self.__adb.window_size().width
+        self.height = self.__adb.window_size().height
 
     def __minicap_install(self):
         """安装minicap"""
@@ -271,7 +250,7 @@ class MiniCap(ScreenCap):
 
     def __read_minicap_stream(self):
         self.__minicap_stream = MiniCapStream(
-            self.__host, self.__port, self.__timeout)
+            self.__host, self.__port)
         self.__minicap_stream.start()
 
     def __start_minicap_by_stream(self):
@@ -288,18 +267,22 @@ class MiniCap(ScreenCap):
     def __del__(self):
         self.__stop_minicap_by_stream()
 
+    def screencap(self) -> cv2.Mat:
+        raw = self.screencap_raw()
+        arr = np.frombuffer(raw[:self.width * self.height * 4], np.uint8).reshape((self.height, self.width, 4))
+        return cv2.cvtColor(arr, cv2.COLOR_RGBA2BGR)
 
 if __name__ == '__main__':
-    import cv2
+
+
     import time
-    import numpy as np
 
     d = MiniCap(serial="127.0.0.1:16384")
-    s = time.time()
-    pixels = d.screencap_raw()
-    np_arr = np.frombuffer(pixels[:(720 * 1280 * 4)], dtype=np.uint8).reshape((720, 1280, 4))
-    np_arr = cv2.cvtColor(np_arr, cv2.COLOR_RGBA2BGR)
-    cv2.imwrite("test.png", np_arr)
-    # print((time.time() - s) * 1000)
-    # cv2.imshow("",np_arr)
-    # cv2.waitKey(0)
+
+    for i in range(10):
+        s = time.time()
+        np_arr = d.screencap()
+        print((time.time() - s) * 1000)
+        time.sleep(0.5)
+    cv2.imshow("",np_arr)
+    cv2.waitKey(0)

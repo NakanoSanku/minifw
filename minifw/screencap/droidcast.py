@@ -1,6 +1,8 @@
 import subprocess
 
+import cv2
 import requests
+import numpy as np
 from adbutils import adb
 from loguru import logger
 
@@ -12,14 +14,13 @@ from minifw.screencap.screencap import ScreenCap
 
 
 class DroidCast(ScreenCap):
-    def __init__(self, serial, display_id: int = None, format: str = "raw") -> None:
+    def __init__(self, serial, display_id: int = None) -> None:
         """
         __init__ DroidCast截图方法
 
         Args:
             serial (str): 设备id
             display_id (int): 显示器id use `adb shell dumpsys SurfaceFlinger --display-id` to get
-            format (str): 截图编码格式
         """
         if serial not in [device.serial for device in adb.device_list()]:
             raise ADBDeviceUnFound("设备不存在，请检查是否链接设备成功")
@@ -27,9 +28,11 @@ class DroidCast(ScreenCap):
         self.__class_path = DROIDCAST_APK_ANDROID_PATH
         self.__display_id = display_id
         self.__droidcast_session = requests.Session()
-        self.__droidcast_format = format
+        self.__droidcast_format = 'raw'
         self.__install()
         self.__start()
+        self.width = self.__adb.window_size().width
+        self.height = self.__adb.window_size().height
 
     def __install(self):
         if DROIDCAST_APK_PACKAGE_NAME not in self.__adb.list_packages():
@@ -82,15 +85,18 @@ class DroidCast(ScreenCap):
     def __str__(self) -> str:
         return "DroidCast-url:{}".format(self.__droidcast_url)
 
+    def screencap(self) -> cv2.Mat:
+        raw = self.screencap_raw()
+        arr = np.frombuffer(raw[:self.width * self.height * 4], np.uint8).reshape((self.height, self.width, 4))
+        return cv2.cvtColor(arr, cv2.COLOR_RGBA2BGR)
+
 if __name__ == '__main__':
     import cv2
     import numpy as np
     import time
-    d = DroidCast(serial="127.0.0.1:16384", format="raw")
+    d = DroidCast(serial="127.0.0.1:16384")
     s= time.time()
-    pixels = d.screencap_raw()
-    np_arr = np.frombuffer(pixels, dtype=np.uint8).reshape((720, 1280, 4))
-    np_arr = cv2.cvtColor(np_arr,cv2.COLOR_RGBA2BGR)
+    np_arr = d.screencap()
     print((time.time() - s) * 1000)
     cv2.imshow("",np_arr)
     cv2.waitKey(0)

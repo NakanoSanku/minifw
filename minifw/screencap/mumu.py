@@ -1,5 +1,6 @@
 import ctypes
 
+import cv2
 import numpy as np
 
 from minifw.common import MuMuApi, MUMU_API_DLL_PATH
@@ -83,7 +84,15 @@ class MuMuScreenCap(ScreenCap):
     def __del__(self):
         self.nemu.disconnect(self.handle)
 
+    def screencap(self) -> cv2.Mat:
+        raw = self.screencap_raw()
+        width = int(self.width.value)
+        height = int(self.height.value)
+        return np.frombuffer(raw[:width * height * 4], np.uint8).reshape((height, width, 3))
 
 if __name__ == '__main__':
-    cap = MuMuScreenCap(0,r"C:\Program Files\Netease\MuMu Player 12")
-    cap.save_screencap()
+    import time
+    d = MuMuScreenCap(0,r"C:\Program Files\Netease\MuMu Player 12")
+    s = time.time()
+    np_arr = d.screencap()
+    print((time.time() - s) * 1000)
