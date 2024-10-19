@@ -2,7 +2,6 @@ import json
 import socket
 import subprocess
 import threading
-import time
 
 from adbutils import adb
 from loguru import logger
@@ -84,6 +83,7 @@ class MiniCapStream:
                     elif 18 <= read_banner_bytes <= 21:
                         banner['virtualHeight'] += (chunk[cursor] <<
                                                     ((read_banner_bytes - 18) * 8)) & 0xFFFFFFFF
+                        frame_body_length = banner['virtualWidth'] * banner['virtualHeight'] * 4
                     elif read_banner_bytes == 22:
                         banner['orientation'] = chunk[cursor] * 90
                     elif read_banner_bytes == 23:
@@ -93,21 +93,11 @@ class MiniCapStream:
                     read_banner_bytes += 1
 
                     if read_banner_bytes == banner_length:
-                        logger.info(f"banner {banner}",)
-                elif read_frame_bytes < 4:
-                    frame_body_length += (chunk[cursor] <<
-                                          (read_frame_bytes * 8)) & 0xFFFFFFFF
-                    cursor += 1
-                    read_frame_bytes += 1
+                        logger.info(f"banner {banner}", )
                 else:
                     max_buf_size = frame_body_length
                     if len(chunk) - cursor >= frame_body_length:
-                        frame_body.extend(
-                            chunk[cursor:cursor + frame_body_length])
-                        if frame_body[0] != 0xFF or frame_body[1] != 0xD8:
-                            logger.error(
-                                f"Frame body does not start with JPG header {frame_body}", )
-                            return
+                        frame_body.extend(chunk[cursor:cursor + frame_body_length])
                         self.data = frame_body
                         cursor += frame_body_length
                         frame_body_length = read_frame_bytes = 0
@@ -130,8 +120,11 @@ class MiniCapStream:
         self.use_cache = False  # 默认不采用缓存
 
         def timeout():
-            logger.debug("MiniCap 获取图像超时，返回缓存图像")
-            self.use_cache = True
+            if self.cache is None:
+                logger.warning("MiniCap Image Cache Is None")
+            else:
+                logger.debug("MiniCap 获取图像超时，返回缓存图像")
+                self.use_cache = True
 
         timeout_thread = threading.Timer(self.timeout / 1000, timeout)
         # 如果self.timeout = None 代表永远不使用缓存
@@ -201,7 +194,7 @@ class MiniCap(ScreenCap):
             return self.__minicap_frame()
 
     def __minicap_frame(self):
-        adb_command = MINICAP_COMMAND+[]
+        adb_command = MINICAP_COMMAND + []
         adb_command.extend(
             ["-P", f"{self.__vm_size}@{self.__vm_size}/{self.__rotation}"])
         adb_command.extend(["-Q", str(self.__quality)])
@@ -300,11 +293,12 @@ if __name__ == '__main__':
     import cv2
     import time
     import numpy as np
-    d = MiniCap(serial="127.0.0.1:16384",use_stream=False)
-    s= time.time()
+
+    d = MiniCap(serial="127.0.0.1:16384")
+    s = time.time()
     pixels = d.screencap_raw()
-    np_arr = np.frombuffer(pixels[:(720*1280*4)], dtype=np.uint8).reshape((720, 1280, 4))
-    np_arr = cv2.cvtColor(np_arr,cv2.COLOR_RGBA2BGR)
+    np_arr = np.frombuffer(pixels[:(720 * 1280 * 4)], dtype=np.uint8).reshape((720, 1280, 4))
+    np_arr = cv2.cvtColor(np_arr, cv2.COLOR_RGBA2BGR)
     cv2.imwrite("test.png", np_arr)
     # print((time.time() - s) * 1000)
     # cv2.imshow("",np_arr)
