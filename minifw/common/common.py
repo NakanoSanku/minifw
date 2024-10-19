@@ -10,7 +10,7 @@ def is_point_in_rect(pt: Point, rect: Rect) -> bool:
     """
     x, y = pt.x, pt.y
     x_min, y_min, x_max, y_max = rect.x, rect.y, rect.x + rect.w, rect.y + rect.h
-    return True if x_min <= x <= x_max and y_min <= y <= y_max else False
+    return True if x_min <= x <= (x_max - 1) and y_min <= y <= (y_max - 1) else False
 
 
 def is_rect_in_rect(rect1: Rect, rect2: Rect) -> bool:
