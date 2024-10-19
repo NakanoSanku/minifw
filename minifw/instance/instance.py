@@ -36,14 +36,9 @@ class ScriptInstance(ScreenCap, Touch, Keyboard):
         self.touch_method = touch_method
         self.screencap_method = screencap_method
 
-    def screencap_raw(self) -> bytes:
-        if self.screencap_method is None:
-            raise Exception("未指定截图方式")
-        return self.screencap_method.screencap_raw()
-
     @performance_test
     def screencap(self) -> cv2.Mat:
-        return bytes2mat(self.screencap_raw())
+        return self.screencap_method.screencap()
 
     @performance_test
     def click(self, x: int, y: int, duration: int = 150):
